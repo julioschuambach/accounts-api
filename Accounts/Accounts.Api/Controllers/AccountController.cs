@@ -1,4 +1,5 @@
-﻿using Accounts.Api.ViewModels;
+﻿using Accounts.Api.Services;
+using Accounts.Api.ViewModels;
 using Accounts.Domain.Entities;
 using Accounts.Infrastructure.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -11,9 +12,13 @@ namespace Accounts.Api.Controllers;
 public class AccountController : ControllerBase
 {
     private readonly IAccountRepository _repository;
+    private readonly TokenService _tokenService;
 
-    public AccountController(IAccountRepository repository)
-        => _repository = repository;
+    public AccountController(IAccountRepository repository, TokenService tokenService)
+    {
+        _repository = repository;
+        _tokenService = tokenService;
+    }
 
     [HttpPost]
     [Route("signup")]
@@ -51,7 +56,9 @@ public class AccountController : ControllerBase
             if (account == null || account.Password != viewModel.Password)
                 return StatusCode(401, "E-mail e/ou senha incorretos!");
 
-            return StatusCode(200, account);
+            var token = _tokenService.GenerateToken(account);
+
+            return StatusCode(200, token);
         }
         catch
         {
