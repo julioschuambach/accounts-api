@@ -6,4 +6,5 @@ public interface IAccountRepository
 {
     Account CreateAccount(Account account);
     Account GetAccountByEmail(string email);
+    IEnumerable<Account> GetAccounts();
 }

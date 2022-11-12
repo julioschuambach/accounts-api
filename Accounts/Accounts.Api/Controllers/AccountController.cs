@@ -2,6 +2,7 @@
 using Accounts.Api.ViewModels;
 using Accounts.Domain.Entities;
 using Accounts.Infrastructure.Data.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,6 +60,22 @@ public class AccountController : ControllerBase
             var token = _tokenService.GenerateToken(account);
 
             return StatusCode(200, token);
+        }
+        catch
+        {
+            return StatusCode(500, "Falha interna no servidor!");
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Administrador")]
+    public IActionResult GetAccounts()
+    {
+        try
+        {
+            var accounts = _repository.GetAccounts();
+
+            return StatusCode(200, accounts);
         }
         catch
         {
