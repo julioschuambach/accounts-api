@@ -2,6 +2,7 @@
 using Accounts.Domain.Entities;
 using Accounts.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Accounts.Api.Controllers;
 
@@ -29,6 +30,28 @@ public class AccountController : ControllerBase
             _context.SaveChanges();
 
             return StatusCode(201, account);
+        }
+        catch
+        {
+            return StatusCode(500, "Falha interna no servidor!");
+        }
+    }
+
+    [HttpPost]
+    [Route("signin")]
+    public IActionResult SignIn([FromBody] SignInViewModel viewModel)
+    {
+        try
+        {
+            var account = _context.Accounts
+                                .AsNoTracking()
+                                .Include(x => x.Roles)
+                                .FirstOrDefault(x => x.Email == viewModel.Email);
+
+            if (account == null || account.Password != viewModel.Password)
+                return StatusCode(401, "E-mail e/ou senha incorretos!");
+
+            return StatusCode(200, account);
         }
         catch
         {
