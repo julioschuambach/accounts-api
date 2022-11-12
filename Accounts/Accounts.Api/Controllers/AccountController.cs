@@ -26,7 +26,7 @@ public class AccountController : ControllerBase
     public IActionResult SignUp([FromBody] SignUpViewModel viewModel)
     {
         if (viewModel.Password != viewModel.ConfirmPassword)
-            return StatusCode(400, "As senhas não coincidem!");
+            return StatusCode(400, new ResultViewModel<string>("As senhas não coincidem!"));
 
         Account newAccount = new(viewModel.Username, viewModel.Email, viewModel.Password);
 
@@ -34,15 +34,15 @@ public class AccountController : ControllerBase
         {
             var account = _repository.CreateAccount(newAccount);
 
-            return StatusCode(201, account);
+            return StatusCode(201, new ResultViewModel<Account>(account));
         }
         catch (DbUpdateException)
         {
-            return StatusCode(400, "Nome de usuário e/ou e-mail já cadastrados!");
+            return StatusCode(400, new ResultViewModel<string>("Nome de usuário e/ou e-mail já cadastrados!"));
         }
         catch
         {
-            return StatusCode(500, "Falha interna no servidor!");
+            return StatusCode(500, new ResultViewModel<string>("Falha interna no servidor!"));
         }
     }
 
@@ -55,15 +55,15 @@ public class AccountController : ControllerBase
             var account = _repository.GetAccountByEmail(viewModel.Email);
 
             if (account == null || account.Password != viewModel.Password)
-                return StatusCode(401, "E-mail e/ou senha incorretos!");
+                return StatusCode(401, new ResultViewModel<string>("E-mail e/ou senha incorretos!"));
 
             var token = _tokenService.GenerateToken(account);
 
-            return StatusCode(200, token);
+            return StatusCode(200, new ResultViewModel<string>(token, null));
         }
         catch
         {
-            return StatusCode(500, "Falha interna no servidor!");
+            return StatusCode(500, new ResultViewModel<string>("Falha interna no servidor!"));
         }
     }
 
@@ -75,11 +75,11 @@ public class AccountController : ControllerBase
         {
             var accounts = _repository.GetAccounts();
 
-            return StatusCode(200, accounts);
+            return StatusCode(200, new ResultViewModel<IEnumerable<Account>>(accounts));
         }
         catch
         {
-            return StatusCode(500, "Falha interna no servidor!");
+            return StatusCode(500, new ResultViewModel<string>("Falha interna no servidor!"));
         }
     }
 }
