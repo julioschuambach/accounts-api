@@ -26,7 +26,11 @@ builder.Services.AddAuthentication(x =>
     };
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        options.SuppressModelStateInvalidFilter = true;
+    });
 
 builder.Services.AddDbContext<AccountsDbContext>();
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();

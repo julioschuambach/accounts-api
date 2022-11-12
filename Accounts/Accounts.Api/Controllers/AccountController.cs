@@ -1,4 +1,5 @@
-﻿using Accounts.Api.Services;
+﻿using Accounts.Api.Extensions;
+using Accounts.Api.Services;
 using Accounts.Api.ViewModels;
 using Accounts.Domain.Entities;
 using Accounts.Infrastructure.Data.Repositories.Interfaces;
@@ -25,6 +26,9 @@ public class AccountController : ControllerBase
     [Route("signup")]
     public IActionResult SignUp([FromBody] SignUpViewModel viewModel)
     {
+        if (!ModelState.IsValid)
+            return StatusCode(400, new ResultViewModel<string>(ModelState.GetErrors()));
+
         if (viewModel.Password != viewModel.ConfirmPassword)
             return StatusCode(400, new ResultViewModel<string>("As senhas não coincidem!"));
 
@@ -50,6 +54,9 @@ public class AccountController : ControllerBase
     [Route("signin")]
     public IActionResult SignIn([FromBody] SignInViewModel viewModel)
     {
+        if (!ModelState.IsValid)
+            return StatusCode(400, new ResultViewModel<string>(ModelState.GetErrors()));
+
         try
         {
             var account = _repository.GetAccountByEmail(viewModel.Email);
