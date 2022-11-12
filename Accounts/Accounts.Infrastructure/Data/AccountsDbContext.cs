@@ -1,4 +1,5 @@
 ﻿using Accounts.Domain.Entities;
+using Accounts.Infrastructure.Data.Mappings;
 using Microsoft.EntityFrameworkCore;
 
 namespace Accounts.Infrastructure.Data;
@@ -11,4 +12,10 @@ public class AccountsDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer(_connectionString);
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfiguration(new AccountMapping());
+        modelBuilder.ApplyConfiguration(new RoleMapping());
+    }
 }
