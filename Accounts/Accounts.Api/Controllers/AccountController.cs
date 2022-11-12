@@ -2,6 +2,7 @@
 using Accounts.Domain.Entities;
 using Accounts.Infrastructure.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Accounts.Api.Controllers;
 
@@ -28,6 +29,10 @@ public class AccountController : ControllerBase
             var account = _repository.CreateAccount(newAccount);
 
             return StatusCode(201, account);
+        }
+        catch (DbUpdateException)
+        {
+            return StatusCode(400, "Nome de usuário e/ou e-mail já cadastrados!");
         }
         catch
         {
