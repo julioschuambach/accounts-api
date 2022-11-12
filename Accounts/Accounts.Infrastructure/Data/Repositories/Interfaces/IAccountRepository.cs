@@ -4,7 +4,7 @@ namespace Accounts.Infrastructure.Data.Repositories.Interfaces;
 
 public interface IAccountRepository
 {
-    Account CreateAccount(Account account);
-    Account GetAccountByEmail(string email);
-    IEnumerable<Account> GetAccounts();
+    Task<Account> CreateAccount(Account account);
+    Task<Account> GetAccountByEmail(string email);
+    Task<IEnumerable<Account>> GetAccounts();
 }

@@ -11,30 +11,30 @@ public class AccountRepository : IAccountRepository
     public AccountRepository(AccountsDbContext context)
         => _context = context;
 
-    public Account CreateAccount(Account account)
+    public async Task<Account> CreateAccount(Account account)
     {
-        _context.Accounts.Add(account);
-        _context.SaveChanges();
+        await _context.Accounts.AddAsync(account);
+        await _context.SaveChangesAsync();
 
         return account;
     }
 
-    public Account GetAccountByEmail(string email)
+    public async Task<Account> GetAccountByEmail(string email)
     {
-        var account = _context.Accounts
-                                .AsNoTracking()
-                                .Include(x => x.Roles)
-                                .FirstOrDefault(x => x.Email == email);
+        var account = await _context.Accounts
+                                        .AsNoTracking()
+                                        .Include(x => x.Roles)
+                                        .FirstOrDefaultAsync(x => x.Email == email);
 
         return account;
     }
 
-    public IEnumerable<Account> GetAccounts()
+    public async Task<IEnumerable<Account>> GetAccounts()
     {
-        var accounts = _context.Accounts
-                                .AsNoTracking()
-                                .Include(x => x.Roles)
-                                .ToList();
+        var accounts = await _context.Accounts
+                                        .AsNoTracking()
+                                        .Include(x => x.Roles)
+                                        .ToListAsync();
 
         return accounts;
     }
