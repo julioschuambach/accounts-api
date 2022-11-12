@@ -1,6 +1,6 @@
 ﻿using Accounts.Api.ViewModels;
 using Accounts.Domain.Entities;
-using Accounts.Infrastructure.Data;
+using Accounts.Infrastructure.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +10,10 @@ namespace Accounts.Api.Controllers;
 [Route("accounts")]
 public class AccountController : ControllerBase
 {
-    private readonly AccountsDbContext _context;
+    private readonly IAccountRepository _repository;
 
-    public AccountController(AccountsDbContext context)
-        => _context = context;
+    public AccountController(IAccountRepository repository)
+        => _repository = repository;
 
     [HttpPost]
     [Route("signup")]
@@ -22,14 +22,17 @@ public class AccountController : ControllerBase
         if (viewModel.Password != viewModel.ConfirmPassword)
             return StatusCode(400, "As senhas não coincidem!");
 
-        Account account = new(viewModel.Username, viewModel.Email, viewModel.Password);
+        Account newAccount = new(viewModel.Username, viewModel.Email, viewModel.Password);
 
         try
         {
-            _context.Accounts.Add(account);
-            _context.SaveChanges();
+            var account = _repository.CreateAccount(newAccount);
 
             return StatusCode(201, account);
+        }
+        catch (DbUpdateException)
+        {
+            return StatusCode(400, "Nome de usuário e/ou e-mail já cadastrados!");
         }
         catch
         {
@@ -43,10 +46,7 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = _context.Accounts
-                                .AsNoTracking()
-                                .Include(x => x.Roles)
-                                .FirstOrDefault(x => x.Email == viewModel.Email);
+            var account = _repository.GetAccountByEmail(viewModel.Email);
 
             if (account == null || account.Password != viewModel.Password)
                 return StatusCode(401, "E-mail e/ou senha incorretos!");
