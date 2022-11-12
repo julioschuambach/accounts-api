@@ -1,9 +1,7 @@
 ﻿using Accounts.Api.ViewModels;
 using Accounts.Domain.Entities;
-using Accounts.Infrastructure.Data;
 using Accounts.Infrastructure.Data.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace Accounts.Api.Controllers;
 
