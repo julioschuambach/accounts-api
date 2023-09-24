@@ -46,7 +46,20 @@ public class AccountMapping : IEntityTypeConfiguration<Account>
             .HasColumnType("DATETIME")
             .IsRequired();
 
-        builder.HasMany(x => x.Roles);
+        builder.HasMany(x => x.Roles)
+               .WithMany(x => x.Accounts)
+               .UsingEntity<Dictionary<string, object>>
+                ("AccountRoles",
+                    account => account
+                        .HasOne<Role>()
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .HasConstraintName("FK_AccountRoles_RoleId"),
+                    role => role
+                        .HasOne<Account>()
+                        .WithMany()
+                        .HasForeignKey("AccountId")
+                        .HasConstraintName("FK_AccountRoles_AccountId"));
 
         builder.HasIndex(x => x.Id, "IX_Accounts_Id")
             .IsUnique();
