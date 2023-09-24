@@ -26,4 +26,14 @@ public class AccountsRepository : IAccountsRepository
 
         return account;
     }
+
+    public IEnumerable<Account> GetAccounts()
+    {
+        var accounts = _context.Accounts
+                               .AsNoTracking()
+                               .Include(x => x.Roles)
+                               .ToList();
+
+        return accounts;
+    }
 }
