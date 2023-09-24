@@ -1,6 +1,6 @@
 ﻿using Accounts.Api.ViewModels;
 using Accounts.Domain.Entities;
-using Accounts.Infrastructure.Data;
+using Accounts.Infrastructure.Data.Interfaces.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +10,10 @@ namespace Accounts.Api.Controllers;
 [Route("accounts")]
 public class AccountController : ControllerBase
 {
-    private readonly AccountsDbContext _context;
+    private readonly IAccountsRepository _repository;
 
-    public AccountController(AccountsDbContext context)
-        => _context = context;
+    public AccountController(IAccountsRepository repository)
+        => _repository = repository;
 
     [HttpPost]
     [Route("signup")]
@@ -26,14 +26,17 @@ public class AccountController : ControllerBase
 
         try
         {
-            _context.Accounts.Add(account);
-            _context.SaveChanges();
+            _repository.CreateAccount(account);
 
             return StatusCode(201, account);
         }
-        catch
+        catch (DbUpdateException)
         {
-            return StatusCode(500, "Internal server error.");
+            return StatusCode(400, "Username or email already registered.");
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
         }
     }
 
@@ -43,19 +46,16 @@ public class AccountController : ControllerBase
     {
         try
         {
-            var account = _context.Accounts
-                                  .AsNoTracking()
-                                  .Include(x => x.Roles)
-                                  .FirstOrDefault(x => x.Email == viewModel.Email);
+            Account? account = _repository.GetAccountByEmail(viewModel.Email);
 
             if (account == null || account.Password != viewModel.Password)
                 return StatusCode(401, "The username or password is incorrect.");
 
             return StatusCode(200, account);
         }
-        catch
+        catch (Exception ex)
         {
-            return StatusCode(500, "Internal server error.");
+            return StatusCode(500, ex.Message);
         }
     }
 }

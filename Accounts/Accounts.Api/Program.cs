@@ -1,4 +1,6 @@
 using Accounts.Infrastructure.Data;
+using Accounts.Infrastructure.Data.Interfaces.Repositories;
+using Accounts.Infrastructure.Data.Repositories;
 
 namespace Accounts.Api
 {
@@ -10,6 +12,7 @@ namespace Accounts.Api
             builder.Services.AddControllers();
 
             builder.Services.AddDbContext<AccountsDbContext>();
+            builder.Services.AddTransient<IAccountsRepository, AccountsRepository>();
 
             var app = builder.Build();
             app.MapControllers();
