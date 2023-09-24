@@ -1,3 +1,5 @@
+using Accounts.Infrastructure.Data;
+
 namespace Accounts.Api
 {
     public class Program
@@ -5,9 +7,12 @@ namespace Accounts.Api
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-            var app = builder.Build();
+            builder.Services.AddControllers();
 
-            app.MapGet("/", () => "Hello World!");
+            builder.Services.AddDbContext<AccountsDbContext>();
+
+            var app = builder.Build();
+            app.MapControllers();
 
             app.Run();
         }
