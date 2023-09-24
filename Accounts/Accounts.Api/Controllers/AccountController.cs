@@ -1,4 +1,5 @@
-﻿using Accounts.Api.Services;
+﻿using Accounts.Api.Extensions;
+using Accounts.Api.Services;
 using Accounts.Api.ViewModels;
 using Accounts.Domain.Entities;
 using Accounts.Infrastructure.Data.Interfaces.Repositories;
@@ -25,8 +26,11 @@ public class AccountController : ControllerBase
     [Route("signup")]
     public IActionResult SignUp([FromBody] SignUpViewModel viewModel)
     {
+        if (!ModelState.IsValid)
+            return StatusCode(400, new ResultViewModel<string>(ModelState.GetErrors()));
+
         if (viewModel.Password != viewModel.ConfirmPassword)
-            return StatusCode(400, "The passwords don't match.");
+            return StatusCode(400, new ResultViewModel<string>("The passwords don't match."));
 
         Account account = new(viewModel.Username, viewModel.Email, viewModel.Password);
 
@@ -34,15 +38,15 @@ public class AccountController : ControllerBase
         {
             _repository.CreateAccount(account);
 
-            return StatusCode(201, account);
+            return StatusCode(201, new ResultViewModel<Account>(account));
         }
         catch (DbUpdateException)
         {
-            return StatusCode(400, "Username or email already registered.");
+            return StatusCode(400, new ResultViewModel<string>("Username or email already registered."));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex.Message);
+            return StatusCode(500, new ResultViewModel<string>(ex.Message));
         }
     }
 
@@ -50,20 +54,23 @@ public class AccountController : ControllerBase
     [Route("signin")]
     public IActionResult SignIn([FromBody] SignInViewModel viewModel)
     {
+        if (!ModelState.IsValid)
+            return StatusCode(400, new ResultViewModel<string>(ModelState.GetErrors()));
+
         try
         {
             Account? account = _repository.GetAccountByEmail(viewModel.Email);
 
             if (account == null || account.Password != viewModel.Password)
-                return StatusCode(401, "The username or password is incorrect.");
+                return StatusCode(401, new ResultViewModel<string>("The username or password is incorrect."));
 
             var token = _tokenService.GenerateToken(account);
 
-            return StatusCode(200, token);
+            return StatusCode(200, new ResultViewModel<string>(token, new()));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex.Message);
+            return StatusCode(500, new ResultViewModel<string>(ex.Message));
         }
     }
 
@@ -75,11 +82,11 @@ public class AccountController : ControllerBase
         {
             var accounts = _repository.GetAccounts();
 
-            return StatusCode(200, accounts);
+            return StatusCode(200, new ResultViewModel<IEnumerable<Account>>(accounts));
         }
         catch (Exception ex)
         {
-            return StatusCode(500, ex.Message);
+            return StatusCode(500, new ResultViewModel<string>(ex.Message));
         }
     }
 }
