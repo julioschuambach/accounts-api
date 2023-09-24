@@ -24,7 +24,7 @@ public class AccountController : ControllerBase
 
     [HttpPost]
     [Route("signup")]
-    public IActionResult SignUp([FromBody] SignUpViewModel viewModel)
+    public async Task<IActionResult> SignUp([FromBody] SignUpViewModel viewModel)
     {
         if (!ModelState.IsValid)
             return StatusCode(400, new ResultViewModel<string>(ModelState.GetErrors()));
@@ -36,7 +36,7 @@ public class AccountController : ControllerBase
 
         try
         {
-            _repository.CreateAccount(account);
+            await _repository.CreateAccount(account);
 
             return StatusCode(201, new ResultViewModel<Account>(account));
         }
@@ -52,14 +52,14 @@ public class AccountController : ControllerBase
 
     [HttpPost]
     [Route("signin")]
-    public IActionResult SignIn([FromBody] SignInViewModel viewModel)
+    public async Task<IActionResult> SignIn([FromBody] SignInViewModel viewModel)
     {
         if (!ModelState.IsValid)
             return StatusCode(400, new ResultViewModel<string>(ModelState.GetErrors()));
 
         try
         {
-            Account? account = _repository.GetAccountByEmail(viewModel.Email);
+            Account? account = await _repository.GetAccountByEmail(viewModel.Email);
 
             if (account == null || account.Password != viewModel.Password)
                 return StatusCode(401, new ResultViewModel<string>("The username or password is incorrect."));
@@ -76,11 +76,11 @@ public class AccountController : ControllerBase
 
     [HttpGet]
     [Authorize(Roles = "Administrator")]
-    public IActionResult GetAccounts()
+    public async Task<IActionResult> GetAccounts()
     {
         try
         {
-            var accounts = _repository.GetAccounts();
+            var accounts = await _repository.GetAccounts();
 
             return StatusCode(200, new ResultViewModel<IEnumerable<Account>>(accounts));
         }
